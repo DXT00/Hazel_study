@@ -1,4 +1,5 @@
 #pragma once
+#include"Hazel/Core.h"
 #include"Hazel/Event/Event.h"
 
 
@@ -14,12 +15,13 @@ namespace Hazel {
 		virtual void OnDetach() {}
 		virtual void OnUpdate() {}
 		virtual void OnEvent(Event& e) {}
+		virtual void OnImGuiRender() {};
 		
-		inline const std::string &GetString()const { return m_DegugName; }
+		inline const std::string &GetString()const { return m_DebugName; }
 
 
 	protected:
-		std::string m_DegugName;
+		std::string m_DebugName;
 	};
 
 

@@ -2,9 +2,8 @@
 
 #include "Core.h"
 #include "spdlog/spdlog.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/fmt/ostr.h" //so that we can log custom type -->Events
-#include <memory>
+
 namespace Hazel {
 
 	class HAZEL_API Log

@@ -20,11 +20,11 @@ namespace Hazel {
 		}
 
 		
-		EVENT_CLASS_TYPE(MouseMoved);
+		EVENT_CLASS_TYPE(MouseMoved)
 		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryMouse);
 
 	private:
-		int m_MouseX,m_MouseY;
+		float m_MouseX,m_MouseY;
 	};
 
 
@@ -43,8 +43,8 @@ namespace Hazel {
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(MouseScrolled);
-		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryMouse);
+		EVENT_CLASS_TYPE(MouseScrolled)
+		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryMouse)
 
 	/*	static EventType GetStaticType() { return EventType::MouseScrolled; }
 		virtual EventType GetEventype()const override { return GetStaticType(); }
@@ -53,7 +53,7 @@ namespace Hazel {
 
 
 	private:
-		int m_XOffset, m_YOffset;
+		float m_XOffset, m_YOffset;
 	};
 
 
@@ -61,11 +61,11 @@ namespace Hazel {
 	{
 	public:
 		inline int GetMouseButton() const { return m_Button; }
-		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryMouse);
+		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryMouse)
 
 	protected:
 		MouseButtonEvent(int button)
-					:m_Button(button) {};
+					:m_Button(button) {}
 
 		int m_Button;
 	};
@@ -75,14 +75,14 @@ namespace Hazel {
 	{
 	public:
 		MouseButtonPressedEvent(int button)
-			:MouseButtonEvent(button) {};
+			:MouseButtonEvent(button) {}
 
 		std::string ToString()const override {
 			std::stringstream ss;
 			ss << "MouseButtonPressedEvent: " << m_Button;
 			return ss.str();
 		}
-		EVENT_CLASS_TYPE(MouseButtonPressed);
+		EVENT_CLASS_TYPE(MouseButtonPressed)
 
 	};
 
@@ -97,7 +97,7 @@ namespace Hazel {
 			ss << "MouseButtonReleaseEvent: " << m_Button;
 			return ss.str();
 		}
-		EVENT_CLASS_TYPE(MouseButtonReleased);
+		EVENT_CLASS_TYPE(MouseButtonReleased)
 
 	};
 }

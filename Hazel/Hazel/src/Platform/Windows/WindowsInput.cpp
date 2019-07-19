@@ -7,15 +7,15 @@
 namespace Hazel{
 	Input* Input::s_Instance = new WindowsInput();
 	
-	WindowsInput::WindowsInput()
-	{
-	}
+	//WindowsInput::WindowsInput()
+	//{
+	//}
 
 
-	WindowsInput::~WindowsInput()
-	{
-		
-	}
+	//WindowsInput::~WindowsInput()
+	//{
+	//	
+	//}
 
 	bool WindowsInput::IsKeyPressedImpl(int keycode)
 	{
@@ -39,7 +39,7 @@ namespace Hazel{
 
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-		return {xpos,ypos};
+		return {(float)xpos,(float)ypos};
 	}
 
 	float WindowsInput::GetMouseXImpl()

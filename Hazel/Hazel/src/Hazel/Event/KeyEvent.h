@@ -34,7 +34,7 @@ namespace Hazel {
 
 	
 		EVENT_CLASS_TYPE(KeyPressed)
-		EVENT_CLASS_CATEGORY( EventCategoryInput | EventCategoryKeyBoard)
+	//	EVENT_CLASS_CATEGORY( EventCategoryInput | EventCategoryKeyBoard)
 	private:
 		int m_RepeatCount;
 	};
@@ -57,7 +57,7 @@ namespace Hazel {
 
 
 		EVENT_CLASS_TYPE(KeyReleased)
-		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryKeyBoard)
+		//EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryKeyBoard)
 	};
 
 
@@ -78,6 +78,6 @@ namespace Hazel {
 
 
 		EVENT_CLASS_TYPE(KeyTyped)
-			EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryKeyBoard)
+	//		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryKeyBoard)
 	};
 }

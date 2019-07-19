@@ -5,7 +5,7 @@ namespace Hazel {
 
 	LayerStack::LayerStack()
 	{
-		m_LayerInsert = m_Layers.begin();
+		
 	}
 
 
@@ -20,20 +20,20 @@ namespace Hazel {
 	{
 		m_Layers.emplace(m_Layers.begin()+ m_LayerInsertIndex, layer);
 		m_LayerInsertIndex++;
-		layer->OnAttach();
+	//layer->OnAttach();  //有OnAttach就异常？？为什么？？？？--》在Application::PushOverLay(Layer* layer)里已经OnAttach()了！
 	}
 
-	void LayerStack::PushOverLayer(Layer * overlay)
+	void LayerStack::PushOverLay(Layer * overlay)
 	{
 		m_Layers.emplace_back( overlay);
-		overlay->OnAttach();
+		//overlay->OnAttach();//有OnAttach就异常？？为什么？？？？
 	}
 
 	void LayerStack::PopLayer(Layer * layer)
 	{
-		auto it = find(m_Layers.begin(), m_Layers.begin() + m_LayerInsertIndex, layer);
+		auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
 		if (it != m_Layers.end()) {
-			layer->OnDetach();
+			//layer->OnDetach();
 			m_Layers.erase(it);
 			m_LayerInsertIndex--;
 		}
@@ -41,9 +41,9 @@ namespace Hazel {
 
 	void LayerStack::PopOverLayer(Layer * overlay)
 	{
-		auto it = find(m_Layers.begin() + m_LayerInsertIndex, m_Layers.end(), overlay);
+		auto it = std::find(m_Layers.begin(), m_Layers.end(), overlay);
 		if (it != m_Layers.end()) {
-			overlay->OnDetach();
+			//overlay->OnDetach();
 			m_Layers.erase(it);
 		}
 	}
