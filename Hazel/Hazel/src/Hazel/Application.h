@@ -7,6 +7,7 @@
 #include "Hazel/Event/ApplicationEvent.h"
 #include "Hazel/Renderer/Shader.h"
 #include "Hazel/Renderer/Buffer.h"
+#include "Hazel/Renderer/VertexArray.h"
 //#include "Layer.h"
 
 #include "Hazel/ImGui/ImGuiLayer.h"
@@ -35,10 +36,15 @@ namespace Hazel {
 		LayerStack m_LayerStack;
 
 
-		unsigned int m_VertexArray;
-		std::unique_ptr<VertexBuffer> m_VertexBuffer;
-		std::unique_ptr<IndexBuffer> m_IndexBuffer;
-		std::unique_ptr<Shader> m_Shader;
+		std::shared_ptr<VertexArray> m_VertexArray;
+		std::shared_ptr<VertexBuffer> m_VertexBuffer;
+		std::shared_ptr<IndexBuffer> m_IndexBuffer;
+		std::shared_ptr<Shader> m_Shader;
+
+		std::shared_ptr<VertexArray> m_SqareVA;
+		std::shared_ptr<VertexBuffer> m_SqareVB;
+		std::shared_ptr<IndexBuffer>m_SqareIB;
+		std::shared_ptr<Shader> m_SqareShader;
 
 	private:
 		static Application* s_Instance;//Singleton

@@ -26,7 +26,7 @@ namespace Hazel {
 
 
 
-	Hazel::IndexBuffer * IndexBuffer::Create(uint32_t *Indices, uint32_t count)
+	IndexBuffer * IndexBuffer::Create(uint32_t *Indices, uint32_t count)
 	{
 		switch (Renderer::GetAPI())
 		{
