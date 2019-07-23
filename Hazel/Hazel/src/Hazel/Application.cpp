@@ -3,7 +3,7 @@
 
 #include "Hazel/Log.h"
 
-#include <glad/glad.h>
+#include "Renderer/Renderer.h"
 
 #include "Input.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
@@ -43,14 +43,9 @@ namespace Hazel {
 		unsigned int indices[3] = { 0,1,2 };
 		unsigned int squareIndices[6] = { 0,1,2,0,2,3 };
 
-		m_VertexArray.reset(VertexArray::Create());
-		m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
-		m_IndexBuffer.reset(IndexBuffer::Create(indices, 3));
-
-
 		BufferLayout layout = {
-			{ ShaderDataType::Float3,"a_Position", false },
-			{ ShaderDataType::Float4,"a_Color",    false },
+				{ ShaderDataType::Float3,"a_Position", false },
+				{ ShaderDataType::Float4,"a_Color",    false },
 
 
 		};
@@ -59,38 +54,29 @@ namespace Hazel {
 
 
 		};
-		m_VertexBuffer->SetLayout(layout);
-		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
-		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
+
+		std::shared_ptr<VertexBuffer>vertexBuffer;
+		std::shared_ptr<IndexBuffer> indexBuffer;
+		m_VertexArray.reset(VertexArray::Create());
+		vertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
+		indexBuffer.reset(IndexBuffer::Create(indices, 3));
+
+		vertexBuffer->SetLayout(layout);
+		m_VertexArray->AddVertexBuffer(vertexBuffer);
+		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 
-		m_SqareVA.reset(VertexArray::Create());
-		m_SqareVB.reset(VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
-		m_SqareIB.reset(IndexBuffer::Create(squareIndices, 6));
+		std::shared_ptr<VertexBuffer>squareVB;
+		std::shared_ptr<IndexBuffer> squareIB;
+		m_SquareVA.reset(VertexArray::Create());
+		squareVB.reset(VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
+		squareIB.reset(IndexBuffer::Create(squareIndices, 6));
 
-		m_SqareVB->SetLayout(squareLayout);
-		m_SqareVA->AddVertexBuffer(m_SqareVB);
-		m_SqareVA->SetIndexBuffer(m_SqareIB);
+		squareVB->SetLayout(squareLayout);
+		m_SquareVA->AddVertexBuffer(squareVB);
+		m_SquareVA->SetIndexBuffer(squareIB);
 
-		/*	uint32_t index = 0;
-			for (auto& element: m_VertexBuffer->GetLayout())
-			{
-				glEnableVertexAttribArray(index);
-				glVertexAttribPointer(index,
-					element.GetElementCount(),
-					ShaderDataTypeToBufferType(element.Type),
-					element.Normalized ? GL_TRUE : GL_FALSE,
-					layout.GetStride(),
-					(void *)element.Offset);
-				index++;
-			}*/
-			/*glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
-
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), nullptr);
-			glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)12);
-	*/
-
+	
 		const std::string vertexSrc = R"(
 				#version 330 core
 				
@@ -162,7 +148,7 @@ namespace Hazel {
 				)";
 		//m_Shader = std::make_unique<Shader>(vertexSrc,fragmentSrc);
 		m_Shader.reset(new Shader(vertexSrc, fragmentSrc));
-		m_SqareShader.reset(new Shader(squareVertexSrc, squareFragmentSrc));
+		m_SquareShader.reset(new Shader(squareVertexSrc, squareFragmentSrc));
 
 	}
 
@@ -199,17 +185,18 @@ namespace Hazel {
 	{
 		while (m_Running)
 		{
-			glClearColor(0.1f, 0.1f, 0.1f, 1);
-			glClear(GL_COLOR_BUFFER_BIT);
-			m_SqareShader->Bind();
-			m_SqareVA->Bind();
-			glDrawElements(GL_TRIANGLES, m_SqareVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+			
+			RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+			RenderCommand::Clear();
+			Renderer::BeginScene();
+			
+			m_SquareShader->Bind();
+			Renderer::Submit(m_SquareVA);
 
 			m_Shader->Bind();
-			m_VertexArray->Bind();
-			glDrawElements(GL_TRIANGLES, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+			Renderer::Submit(m_VertexArray);
 
-
+			Renderer::EndScene();
 
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
