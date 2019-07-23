@@ -7,6 +7,10 @@
 
 #include "Input.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
+#include <glad/glad.h>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include <GLFW/glfw3.h>
 namespace Hazel {
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
@@ -24,6 +28,8 @@ namespace Hazel {
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverLay(m_ImGuiLayer);
+
+		m_MainCamera = std::unique_ptr<OrthographicCamera>(new OrthographicCamera());
 
 		float vertices[3 * 7] = {
 			//Position          //Color
@@ -76,7 +82,11 @@ namespace Hazel {
 		m_SquareVA->AddVertexBuffer(squareVB);
 		m_SquareVA->SetIndexBuffer(squareIB);
 
-	
+		m_MainCamera->SetViewMatrix(glm::mat4(1.0f));
+		m_MainCamera->SetProjectionMatrix(glm::mat4(1.0f));
+
+		
+		
 		const std::string vertexSrc = R"(
 				#version 330 core
 				
@@ -86,11 +96,15 @@ namespace Hazel {
 				out vec3 v_Position;
 				out vec4 v_Color;
 
+				uniform mat4 model;
+				uniform mat4 view;
+				uniform mat4 projection;
+
 				void main()
 				{
 					v_Position = a_Position;
 					v_Color = a_Color;
-					gl_Position = vec4(a_Position,1.0);
+					gl_Position = projection*view*model*vec4(a_Position,1.0f);
 
 				}
 
@@ -147,8 +161,10 @@ namespace Hazel {
 				}
 				)";
 		//m_Shader = std::make_unique<Shader>(vertexSrc,fragmentSrc);
+		
 		m_Shader.reset(new Shader(vertexSrc, fragmentSrc));
 		m_SquareShader.reset(new Shader(squareVertexSrc, squareFragmentSrc));
+		
 
 	}
 
@@ -194,7 +210,18 @@ namespace Hazel {
 			Renderer::Submit(m_SquareVA);
 
 			m_Shader->Bind();
+			glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+			glm::mat4 view = glm::mat4(1.0f);
+			glm::mat4 projection = glm::mat4(1.0f);
+			model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+			projection = glm::perspective(glm::radians(45.0f), (float)m_Window->GetWidth() / (float)m_Window->GetHeight(), 0.1f, 100.0f);
+			m_Shader->setUniformMat4("view", view);
+			m_Shader->setUniformMat4("projection", projection);
+			m_Shader->setUniformMat4("model", model);
 			Renderer::Submit(m_VertexArray);
+
+			
 
 			Renderer::EndScene();
 
