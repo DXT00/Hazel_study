@@ -201,14 +201,15 @@ namespace Hazel {
 		{
 			glClearColor(0.1f, 0.1f, 0.1f, 1);
 			glClear(GL_COLOR_BUFFER_BIT);
-			/*	m_Shader->Bind();
-
-				m_VertexArray->Bind();
-				glDrawElements(GL_TRIANGLES, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);*/
 			m_SqareShader->Bind();
-
 			m_SqareVA->Bind();
-			glDrawElements(GL_TRIANGLES, m_SqareIB->GetCount(), GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, m_SqareVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+
+			m_Shader->Bind();
+			m_VertexArray->Bind();
+			glDrawElements(GL_TRIANGLES, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+
+
 
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
