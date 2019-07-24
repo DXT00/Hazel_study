@@ -5,10 +5,8 @@
 #include "Hazel/LayerStack.h"
 #include "Hazel/Event/Event.h"
 #include "Hazel/Event/ApplicationEvent.h"
-#include "Hazel/Renderer/Shader.h"
-#include "Hazel/Renderer/Buffer.h"
-#include "Hazel/Renderer/VertexArray.h"
-#include "Hazel/Renderer/OrthographicCamera.h"
+
+
 //#include "Layer.h"
 
 #include "Hazel/ImGui/ImGuiLayer.h"
@@ -26,7 +24,7 @@ namespace Hazel {
 		void PushLayer(Layer* layer);
 		void PushOverLay(Layer* overlay);
 		inline Window& GetWindow() { return *m_Window; }
-
+		
 		inline static Application& Get() { return *s_Instance; }
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
@@ -37,13 +35,8 @@ namespace Hazel {
 		LayerStack m_LayerStack;
 
 
-		std::shared_ptr<VertexArray> m_VertexArray;
-		std::shared_ptr<Shader> m_Shader;
 
-		std::shared_ptr<VertexArray> m_SquareVA;
-		std::shared_ptr<Shader> m_SquareShader;
-
-		OrthographicCamera m_Camera;
+		
 
 	private:
 		static Application* s_Instance;//Singleton
