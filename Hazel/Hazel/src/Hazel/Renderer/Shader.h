@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include<glm/glm.hpp>
+
 namespace Hazel {
 
 	class Shader
@@ -10,8 +11,10 @@ namespace Hazel {
 		~Shader();
 		void Bind()const;
 		void Unbind() const;
-		uint32_t GetUniformLocation(const std::string& name) const;
-		void setUniformMat4(const std::string &name, const glm::mat4 &mat) const;
+	
+		
+
+		void SetUniformMat4(const std::string &name, const glm::mat4 &mat) const;
 	private:
 		uint32_t m_RendererID;
 

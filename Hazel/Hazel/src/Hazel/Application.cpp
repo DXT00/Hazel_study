@@ -19,6 +19,7 @@ namespace Hazel {
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application()
+		:m_Camera(-1.6f,1.6f,-0.9f,0.9f) //对应窗口大小 1280 ：720
 	{
 		HZ_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
@@ -29,21 +30,21 @@ namespace Hazel {
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverLay(m_ImGuiLayer);
 
-		m_MainCamera = std::unique_ptr<OrthographicCamera>(new OrthographicCamera());
+		
 
 		float vertices[3 * 7] = {
 			//Position          //Color
-			-0.5f,-0.5f,0.0f,	1.0f,0.0f,0.0f,1.0f,
-			 0.5f,-0.5f,0.0f,	0.0f,1.0f,0.0f,1.0f,
-			 0.0f, 0.5f,0.0f,	0.0f,0.0f,1.0f,1.0f,
+			-0.3f,-0.3f,0.0f,	1.0f,0.0f,0.0f,1.0f,
+			 0.3f,-0.3f,0.0f,	0.0f,1.0f,0.0f,1.0f,
+			 0.0f, 0.3f,0.0f,	0.0f,0.0f,1.0f,1.0f,
 
 		};
 		float squareVertices[3 * 4] = {
 			//Position          //Color
-			-0.5f,-0.5f, 0.0f,
-			0.5f, -0.5f, 0.0f,
-			 0.5f,0.5f, 0.0f,
-			 -0.5f, 0.5f, 0.0f,
+			-0.5f, -0.5f, 0.0f,
+			 0.5f, -0.5f, 0.0f,
+			 0.5f,  0.5f, 0.0f,
+			-0.5f,  0.5f, 0.0f,
 
 		};
 		unsigned int indices[3] = { 0,1,2 };
@@ -82,8 +83,7 @@ namespace Hazel {
 		m_SquareVA->AddVertexBuffer(squareVB);
 		m_SquareVA->SetIndexBuffer(squareIB);
 
-		m_MainCamera->SetViewMatrix(glm::mat4(1.0f));
-		m_MainCamera->SetProjectionMatrix(glm::mat4(1.0f));
+
 
 		
 		
@@ -96,15 +96,14 @@ namespace Hazel {
 				out vec3 v_Position;
 				out vec4 v_Color;
 
-				uniform mat4 model;
-				uniform mat4 view;
-				uniform mat4 projection;
+				uniform mat4 u_ViewProjection;
+				
 
 				void main()
 				{
 					v_Position = a_Position;
 					v_Color = a_Color;
-					gl_Position = projection*view*model*vec4(a_Position,1.0f);
+					gl_Position = u_ViewProjection * vec4(a_Position,1.0f);
 
 				}
 
@@ -131,7 +130,9 @@ namespace Hazel {
 				#version 330 core
 				
 				layout(location = 0) in vec3 a_Position;
-				
+
+				uniform mat4 u_ViewProjection;
+
 				out vec3 v_Position;
 			
 
@@ -139,7 +140,7 @@ namespace Hazel {
 				{
 					v_Position = a_Position;
 				
-					gl_Position = vec4(a_Position,1.0);
+					gl_Position = u_ViewProjection * vec4(a_Position,1.0);
 
 				}
 
@@ -167,6 +168,8 @@ namespace Hazel {
 		
 
 	}
+
+
 
 	Application::~Application()
 	{
@@ -204,22 +207,19 @@ namespace Hazel {
 			
 			RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 			RenderCommand::Clear();
-			Renderer::BeginScene();
-			
-			m_SquareShader->Bind();
-			Renderer::Submit(m_SquareVA);
+			m_Camera.SetPosition({0.5f,0.5f,0.0f});
+			m_Camera.SetRotation(45);
 
-			m_Shader->Bind();
-			glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-			glm::mat4 view = glm::mat4(1.0f);
-			glm::mat4 projection = glm::mat4(1.0f);
-			model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-			projection = glm::perspective(glm::radians(45.0f), (float)m_Window->GetWidth() / (float)m_Window->GetHeight(), 0.1f, 100.0f);
-			m_Shader->setUniformMat4("view", view);
-			m_Shader->setUniformMat4("projection", projection);
-			m_Shader->setUniformMat4("model", model);
-			Renderer::Submit(m_VertexArray);
+			Renderer::BeginScene(m_Camera);
+			
+			/*m_SquareShader->Bind();
+			m_SquareShader->SetUniformMat4("u_ViewProjection", m_Camera.GetViewProjectionMatrix());*/
+			Renderer::Submit(m_SquareVA,m_SquareShader);
+
+			/*m_Shader->Bind();
+			m_Shader->SetUniformMat4("u_ViewProjection", m_Camera.GetViewProjectionMatrix());*/
+			
+			Renderer::Submit(m_VertexArray,m_Shader);
 
 			
 

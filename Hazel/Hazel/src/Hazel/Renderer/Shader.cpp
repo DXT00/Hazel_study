@@ -121,12 +121,10 @@ namespace Hazel {
 
 	}
 
-	uint32_t Shader::GetUniformLocation(const std::string& name) const
+
+	void Shader::SetUniformMat4(const std::string &name, const glm::mat4 &mat) const
 	{
-		return glGetUniformLocation(m_RendererID, name.c_str());
-	}
-	void Shader::setUniformMat4(const std::string &name, const glm::mat4 &mat) const
-	{
-		glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+		glUniformMatrix4fv(location, 1, GL_FALSE, &mat[0][0]);
 	}
 }
