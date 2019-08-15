@@ -164,9 +164,9 @@ namespace Hazel {
 	void WindowsWindow::SetVSync(bool enabled)
 	{
 		if (enabled)
-			glfwSwapInterval(1);
+			glfwSwapInterval(1);//设置为1 会以60fps运行
 		else
-			glfwSwapInterval(0);
+			glfwSwapInterval(0);//设置为0会以本pc的真实帧率运行
 
 		m_Data.VSync = enabled;
 	}
