@@ -1,4 +1,5 @@
 #include <Hazel.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "imgui/imgui.h"
 
@@ -7,7 +8,7 @@ class ExampleLayer : public Hazel::Layer
 {
 public:
 	ExampleLayer()
-		: Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f) //对应窗口大小 1280 ：720
+		: Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f),m_CameraPosition(0.0f), m_SquarePosition(0.0f)//对应窗口大小 1280 ：720
 	{
 
 		float vertices[3 * 7] = {
@@ -72,13 +73,13 @@ public:
 				out vec4 v_Color;
 
 				uniform mat4 u_ViewProjection;
-				
+				uniform mat4 u_Transform;
 
 				void main()
 				{
 					v_Position = a_Position;
 					v_Color = a_Color;
-					gl_Position = u_ViewProjection * vec4(a_Position,1.0f);
+					gl_Position = u_ViewProjection * u_Transform * vec4(a_Position,1.0f);
 
 				}
 
@@ -107,6 +108,7 @@ public:
 				layout(location = 0) in vec3 a_Position;
 
 				uniform mat4 u_ViewProjection;
+				uniform mat4 u_Transform;
 
 				out vec3 v_Position;
 			
@@ -115,7 +117,7 @@ public:
 				{
 					v_Position = a_Position;
 				
-					gl_Position = u_ViewProjection * vec4(a_Position,1.0);
+					gl_Position = u_ViewProjection * u_Transform * vec4(a_Position,1.0);
 
 				}
 
@@ -150,30 +152,49 @@ public:
 
 		if (Hazel::Input::IsKeyPressed(HZ_KEY_LEFT))
 		{
-			m_CameraPosition.x -= m_MoveSpeed * ts;
+			m_CameraPosition.x -= m_CameraMoveSpeed * ts;
 		}
 		else if (Hazel::Input::IsKeyPressed(HZ_KEY_RIGHT))
 		{
-			m_CameraPosition.x += m_MoveSpeed * ts;
+			m_CameraPosition.x += m_CameraMoveSpeed * ts;
 		}
 		if (Hazel::Input::IsKeyPressed(HZ_KEY_UP))
 		{
-			m_CameraPosition.y += m_MoveSpeed * ts;
+			m_CameraPosition.y += m_CameraMoveSpeed * ts;
 		}
 		else if (Hazel::Input::IsKeyPressed(HZ_KEY_DOWN))
 		{
-			m_CameraPosition.y -= m_MoveSpeed * ts;
-
+			m_CameraPosition.y -= m_CameraMoveSpeed * ts;
 		}
 		if (Hazel::Input::IsKeyPressed(HZ_KEY_A))
 		{
-			m_CameraRotation += m_RotateSpeed * ts;
+			m_CameraRotation += m_CameraRotateSpeed * ts;
 		}
 		else if (Hazel::Input::IsKeyPressed(HZ_KEY_D))
 		{
-			m_CameraRotation -= m_RotateSpeed * ts;
+			m_CameraRotation -= m_CameraRotateSpeed * ts;
 		}
 		
+
+
+		if (Hazel::Input::IsKeyPressed(HZ_KEY_J))
+		{
+			m_SquarePosition.x -= m_SquareMoveSpeed * ts;
+		}
+		else if (Hazel::Input::IsKeyPressed(HZ_KEY_L))
+		{
+			m_SquarePosition.x += m_SquareMoveSpeed * ts;
+		}
+		if (Hazel::Input::IsKeyPressed(HZ_KEY_I))
+		{
+			m_SquarePosition.y += m_SquareMoveSpeed * ts;
+		}
+		else if (Hazel::Input::IsKeyPressed(HZ_KEY_K))
+		{
+			m_SquarePosition.y -= m_SquareMoveSpeed * ts;
+		}
+
+
 		Hazel::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		Hazel::RenderCommand::Clear();
 	/*	m_Camera.SetPosition({ 0.5f,0.5f,0.0f });
@@ -181,8 +202,22 @@ public:
 		m_Camera.SetPosition(m_CameraPosition);
 		m_Camera.SetRotation(m_CameraRotation);
 		Hazel::Renderer::BeginScene(m_Camera);
-		Hazel::Renderer::Submit(m_SquareVA, m_SquareShader);
 
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+	/*	for (int x = 0; x <5; x++)
+		{
+			for (int y = 0; y < 5; y++)
+			{
+				glm::vec3 pos(x*0.11f, y*0.11f, 0.0f);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)*scale;
+				Hazel::Renderer::Submit(m_SquareVA, m_SquareShader, transform);
+
+			}
+
+		}*/
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_SquarePosition);//*scale;
+		Hazel::Renderer::Submit(m_SquareVA, m_SquareShader, transform);
 		Hazel::Renderer::Submit(m_VertexArray, m_Shader);
 		Hazel::Renderer::EndScene();
 
@@ -212,11 +247,11 @@ public:
 	//	}
 	//	if (event.GetKeyCode() == HZ_KEY_UP)
 	//	{
-	//		m_Camera.SetRotation(m_Camera.GetRotation()+m_RotateSpeed);
+	//		m_Camera.SetRotation(m_Camera.GetRotation()+m_CameraRotateSpeed);
 	//	}
 	//	if (event.GetKeyCode() == HZ_KEY_DOWN)
 	//	{
-	//		m_Camera.SetRotation(m_Camera.GetRotation()- m_RotateSpeed);
+	//		m_Camera.SetRotation(m_Camera.GetRotation()- m_CameraRotateSpeed);
 	//	}
 	//	return false;
 	//}
@@ -232,10 +267,12 @@ public:
 private:
 	Hazel::OrthographicCamera m_Camera;
 	glm::vec3 m_CameraPosition = { 0.0f,0.0f,0.0f };
-	float m_MoveSpeed = 5;
+	float m_CameraMoveSpeed = 5;
 	float m_CameraRotation = 0;
-	float m_RotateSpeed =180;//1s旋转180度
+	float m_CameraRotateSpeed =180;//1s旋转180度
 
+	glm::vec3 m_SquarePosition;
+	float m_SquareMoveSpeed = 5;
 
 };
 
