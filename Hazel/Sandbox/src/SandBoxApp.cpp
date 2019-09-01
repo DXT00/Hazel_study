@@ -1,6 +1,7 @@
 #include <Hazel.h>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include"Platform/OpenGL/OpenGLShader.h"
+#include <glm/gtc/type_ptr.hpp>
 #include "imgui/imgui.h"
 
 
@@ -129,19 +130,19 @@ public:
 				layout(location = 0) out vec4 color;
 
 				in vec3 v_Position;
-
+				uniform vec3 u_Color;
 				
 				void main()
 				{
 
-					color =vec4(v_Position*0.5+0.5, 1.0);
+					color = vec4(u_Color,1.0f);//vec4(v_Position*0.5+0.5, 1.0);
 
 				}
 				)";
 		//m_Shader = std::make_unique<Shader>(vertexSrc,fragmentSrc);
 
-		m_Shader.reset(new  Hazel::Shader(vertexSrc, fragmentSrc));
-		m_SquareShader.reset(new  Hazel::Shader(squareVertexSrc, squareFragmentSrc));
+		m_Shader.reset(Hazel::Shader::Create(vertexSrc, fragmentSrc));
+		m_SquareShader.reset(Hazel::Shader::Create(squareVertexSrc, squareFragmentSrc));
 	}
 	
 	void OnUpdate(Hazel::TimeStep ts) override
@@ -204,20 +205,27 @@ public:
 		Hazel::Renderer::BeginScene(m_Camera);
 
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
-	/*	for (int x = 0; x <5; x++)
+
+
+		std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_SquareShader)->Bind();
+		std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_SquareShader)->SetUniformFloat3("u_Color",m_SquareColor);
+
+	
+		for (int x = 0; x <5; x++)
 		{
 			for (int y = 0; y < 5; y++)
 			{
 				glm::vec3 pos(x*0.11f, y*0.11f, 0.0f);
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)*scale;
+			
 				Hazel::Renderer::Submit(m_SquareVA, m_SquareShader, transform);
 
 			}
 
-		}*/
+		}
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_SquarePosition);//*scale;
-		Hazel::Renderer::Submit(m_SquareVA, m_SquareShader, transform);
+		//glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_SquarePosition);//*scale;
+		//Hazel::Renderer::Submit(m_SquareVA, m_SquareShader, transform);
 		Hazel::Renderer::Submit(m_VertexArray, m_Shader);
 		Hazel::Renderer::EndScene();
 
@@ -225,36 +233,16 @@ public:
 
 	virtual void OnImGuiRender() override
 	{
-			
+		ImGui::Begin("Settings");
+		ImGui::ColorEdit3("Suqare Color", glm::value_ptr(m_SquareColor));
+		ImGui::End();
 	}
 
 	void OnEvent(Hazel::Event& event) override
 	{
 
-
-		/*Hazel::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Hazel::KeyPressedEvent>(HZ_BIND_EVENT_FN(ExampleLayer::KeyPressedHandle));
-*/
 	}
-	//bool KeyPressedHandle(Hazel::KeyPressedEvent& event) {
-	//	if (event.GetKeyCode() == HZ_KEY_LEFT)
-	//	{
-	//		m_Camera.SetPosition({ m_Camera.GetPosition().x - m_MoveSpeed, m_Camera.GetPosition().y, m_Camera.GetPosition().z });
-	//	}
-	//	if (event.GetKeyCode() == HZ_KEY_RIGHT)
-	//	{
-	//		m_Camera.SetPosition({ m_Camera.GetPosition().x + m_MoveSpeed, m_Camera.GetPosition().y, m_Camera.GetPosition().z });
-	//	}
-	//	if (event.GetKeyCode() == HZ_KEY_UP)
-	//	{
-	//		m_Camera.SetRotation(m_Camera.GetRotation()+m_CameraRotateSpeed);
-	//	}
-	//	if (event.GetKeyCode() == HZ_KEY_DOWN)
-	//	{
-	//		m_Camera.SetRotation(m_Camera.GetRotation()- m_CameraRotateSpeed);
-	//	}
-	//	return false;
-	//}
+
 public:
 		inline Hazel::OrthographicCamera& GetCamera() { return m_Camera; }
 public:
@@ -274,6 +262,7 @@ private:
 	glm::vec3 m_SquarePosition;
 	float m_SquareMoveSpeed = 5;
 
+	glm::vec3 m_SquareColor = { 0.2f,0.3f,0.8f };
 };
 
 class Sandbox : public Hazel::Application
