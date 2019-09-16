@@ -2,11 +2,15 @@
 #include <string>
 #include<glm/glm.hpp>
 #include "Hazel/Renderer/Shader.h"
+//#include "glad/glad.h"
+//TODO:REMOVE!
+typedef unsigned int GLenum;
 namespace Hazel {
 
 	class OpenGLShader:public Shader
 	{
 	public:
+		OpenGLShader(const std::string& filepath);
 		OpenGLShader(const std::string& vertexSrc, const std::string& fragmentSrc);
 		~OpenGLShader();
 		virtual void Bind()const override;
@@ -25,7 +29,11 @@ namespace Hazel {
 	private:
 		uint32_t m_RendererID;
 
-
+	private:
+		std::string ReadFile(std::string filepath);
+		std::unordered_map<GLenum,std::string> PreProcess(const std::string& source);
+		void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
+		
 	};
 
 }

@@ -3,7 +3,7 @@
 
 #include "Hazel/Log.h"
 
-//#include "Renderer/Renderer.h"
+#include "Renderer/Renderer.h"
 
 #include "Input.h"
 //#include "Platform/OpenGL/OpenGLBuffer.h"
@@ -26,6 +26,8 @@ namespace Hazel {
 
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+
+		Renderer::Init();
 		//m_Window->SetVSync(false);
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverLay(m_ImGuiLayer);

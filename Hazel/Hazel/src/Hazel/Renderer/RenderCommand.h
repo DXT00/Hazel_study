@@ -6,7 +6,12 @@ namespace Hazel {
 	class RenderCommand
 	{
 	public:
-		inline static void DrawIndex(const std::shared_ptr<VertexArray>& vertexArray) {
+
+		inline static void Init(){
+			s_RenderAPI->Init();
+		}
+
+		inline static void DrawIndex(const Ref<VertexArray>& vertexArray) {
 			s_RenderAPI->DrawIndex(vertexArray);
 		}
 		inline static void SetClearColor(const glm::vec4& color) {

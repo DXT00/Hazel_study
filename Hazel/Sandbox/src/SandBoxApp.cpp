@@ -12,19 +12,19 @@ public:
 		: Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f),m_CameraPosition(0.0f), m_SquarePosition(0.0f)//对应窗口大小 1280 ：720
 	{
 
-		float vertices[3 * 7] = {
-			//Position          //Color
+		float vertices[] = {
+			//Position          //Color               
 			-0.3f,-0.3f,0.0f,	1.0f,0.0f,0.0f,1.0f,
 			 0.3f,-0.3f,0.0f,	0.0f,1.0f,0.0f,1.0f,
 			 0.0f, 0.3f,0.0f,	0.0f,0.0f,1.0f,1.0f,
 
 		};
-		float squareVertices[3 * 4] = {
-			//Position          //Color
-			-0.5f, -0.5f, 0.0f,
-			 0.5f, -0.5f, 0.0f,
-			 0.5f,  0.5f, 0.0f,
-			-0.5f,  0.5f, 0.0f,
+		float squareVertices[] = {
+			//Position          //Texture Coordinate
+			-0.5f, -0.5f, 0.0f,  0.0f,0.0f,
+			 0.5f, -0.5f, 0.0f,  1.0f,0.0f,
+			 0.5f,  0.5f, 0.0f,  1.0f,1.0f,
+			-0.5f,  0.5f, 0.0f,  0.0f,1.0f
 
 		};
 		unsigned int indices[3] = { 0,1,2 };
@@ -38,12 +38,13 @@ public:
 		};
 		Hazel::BufferLayout squareLayout = {
 			{  Hazel::ShaderDataType::Float3,"a_Position", false },
+			{  Hazel::ShaderDataType::Float2,"a_TexCoord", false },
 
 
 		};
 
-		std::shared_ptr< Hazel::VertexBuffer>vertexBuffer;
-		std::shared_ptr< Hazel::IndexBuffer> indexBuffer;
+		Hazel::Ref< Hazel::VertexBuffer> vertexBuffer;
+		Hazel::Ref< Hazel::IndexBuffer> indexBuffer;
 		m_VertexArray.reset(Hazel::VertexArray::Create());
 		vertexBuffer.reset(Hazel::VertexBuffer::Create(vertices, sizeof(vertices)));
 		indexBuffer.reset(Hazel::IndexBuffer::Create(indices, 3));
@@ -53,8 +54,8 @@ public:
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 
-		std::shared_ptr< Hazel::VertexBuffer>squareVB;
-		std::shared_ptr< Hazel::IndexBuffer> squareIB;
+		Hazel::Ref< Hazel::VertexBuffer>squareVB;
+		Hazel::Ref< Hazel::IndexBuffer> squareIB;
 		m_SquareVA.reset(Hazel::VertexArray::Create());
 		squareVB.reset(Hazel::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
 		squareIB.reset(Hazel::IndexBuffer::Create(squareIndices, 6));
@@ -102,6 +103,8 @@ public:
 
 				}
 				)";
+		m_Shader.reset(Hazel::Shader::Create(vertexSrc, fragmentSrc));
+
 
 		const std::string squareVertexSrc = R"(
 				#version 330 core
@@ -139,10 +142,18 @@ public:
 
 				}
 				)";
-		//m_Shader = std::make_unique<Shader>(vertexSrc,fragmentSrc);
-
-		m_Shader.reset(Hazel::Shader::Create(vertexSrc, fragmentSrc));
 		m_SquareShader.reset(Hazel::Shader::Create(squareVertexSrc, squareFragmentSrc));
+
+		//m_Shader = std::make_unique<Shader>(vertexSrc,fragmentSrc);
+		
+		m_TextureShader.reset(Hazel::Shader::Create("assets/shaders/Texture.glsl"));
+
+		m_Texture = Hazel::Texture2D::Create("assets/textures/awesomeface.png");
+		m_FaceTexture = Hazel::Texture2D::Create("assets/textures/c.png");
+
+		std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_TextureShader)->Bind();
+		std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_TextureShader)->SetUniformInt("u_Texture", 0);//0 --->texture slot
+
 	}
 	
 	void OnUpdate(Hazel::TimeStep ts) override
@@ -176,8 +187,6 @@ public:
 			m_CameraRotation -= m_CameraRotateSpeed * ts;
 		}
 		
-
-
 		if (Hazel::Input::IsKeyPressed(HZ_KEY_J))
 		{
 			m_SquarePosition.x -= m_SquareMoveSpeed * ts;
@@ -198,10 +207,10 @@ public:
 
 		Hazel::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		Hazel::RenderCommand::Clear();
-	/*	m_Camera.SetPosition({ 0.5f,0.5f,0.0f });
-		m_Camera.SetRotation(45);*/
+
 		m_Camera.SetPosition(m_CameraPosition);
 		m_Camera.SetRotation(m_CameraRotation);
+
 		Hazel::Renderer::BeginScene(m_Camera);
 
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
@@ -221,12 +230,17 @@ public:
 				Hazel::Renderer::Submit(m_SquareVA, m_SquareShader, transform);
 
 			}
-
 		}
+		
+		m_Texture->Bind();
+		Hazel::Renderer::Submit(m_SquareVA, m_TextureShader, glm::scale(glm::mat4(1.0f),glm::vec3(1.0f)));
+	
+		m_FaceTexture->Bind();
+		Hazel::Renderer::Submit(m_SquareVA, m_TextureShader,glm::translate(glm::mat4(1.0f),glm::vec3(0.25f,-0.25f,0.0f))*glm::scale(glm::mat4(1.0f), glm::vec3(0.7f)));
 
-		//glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_SquarePosition);//*scale;
-		//Hazel::Renderer::Submit(m_SquareVA, m_SquareShader, transform);
-		Hazel::Renderer::Submit(m_VertexArray, m_Shader);
+		//Triangle
+		//Hazel::Renderer::Submit(m_VertexArray, m_Shader);
+
 		Hazel::Renderer::EndScene();
 
 	}
@@ -245,14 +259,20 @@ public:
 
 public:
 		inline Hazel::OrthographicCamera& GetCamera() { return m_Camera; }
-public:
 
-	std::shared_ptr<Hazel::VertexArray> m_VertexArray;
-	std::shared_ptr<Hazel::Shader> m_Shader;
 
-	std::shared_ptr<Hazel::VertexArray> m_SquareVA;
-	std::shared_ptr<Hazel::Shader> m_SquareShader;
+	
 private:
+	Hazel::Ref<Hazel::VertexArray> m_VertexArray;
+	Hazel::Ref<Hazel::Shader> m_Shader;
+
+	Hazel::Ref<Hazel::VertexArray> m_SquareVA;
+	Hazel::Ref<Hazel::Shader> m_SquareShader;
+
+	Hazel::Ref<Hazel::Shader> m_TextureShader;
+
+	Hazel::Ref<Hazel::Texture2D> m_Texture;
+	Hazel::Ref<Hazel::Texture2D> m_FaceTexture;
 	Hazel::OrthographicCamera m_Camera;
 	glm::vec3 m_CameraPosition = { 0.0f,0.0f,0.0f };
 	float m_CameraMoveSpeed = 5;
